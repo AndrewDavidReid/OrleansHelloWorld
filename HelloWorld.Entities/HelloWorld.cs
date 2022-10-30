@@ -6,15 +6,15 @@ namespace HelloWorld.Entities;
 
 public class HelloWorld : Grain, IHelloWorld
 {
-    public HelloWorld([PersistentState("hello", "Default")] IPersistentState<HelloState> hello
+    public HelloWorld([PersistentState("hello", ConfigurationConstants.StorageName)] IPersistentState<HelloState> hello
     )
     {
         _hello = hello;
     }
-    
+
     private readonly IPersistentState<HelloState> _hello;
 
-    
+
     public async Task<string> SayHelloWorld()
     {
         string greeting = "Hello World";

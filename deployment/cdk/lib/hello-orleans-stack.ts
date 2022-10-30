@@ -52,7 +52,7 @@ export class HelloOrleansStack extends cdk.Stack {
     const siloContainer = new ContainerDefinition(this, "silo-container-def", {
       taskDefinition: siloTaskDefinition,
       environment: {
-        ["RUN_ON_AWS"]: "true",
+        ["RUN_ON_AWS_ECS"]: "true",
         ["MONGO_CONNECTION_STRING"]: process.env.MONGO_CONNECTION_STRING ?? "",
       },
       healthCheck,

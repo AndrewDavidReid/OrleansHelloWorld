@@ -12,6 +12,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="3.6.5" />
+    <PackageReference Include="Microsoft.Orleans.OrleansRuntime" Version="3.6.5" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage" Version="3.6.5" />
+    <PackageReference Include="Microsoft.Orleans.Runtime.Abstractions" Version="3.6.5" />
+    <PackageReference Include="Orleans.Providers.MongoDB" Version="3.8.0" />
+    <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="3.6.5" />
   </ItemGroup>
 
 </Project>

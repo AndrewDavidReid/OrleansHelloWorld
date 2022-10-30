@@ -98,6 +98,10 @@ resource orleansSilo 'Microsoft.Web/sites@2021-01-15' = {
           value: 'Staging'
         }
         {
+          name: 'RUN_ON_AZURE_APP_SERVICE'
+          value: 'true'
+        }
+        {
           name: 'DOCKER_REGISTRY_SERVER_URL'
           value: 'https://${registryHost}'
         }
@@ -110,7 +114,7 @@ resource orleansSilo 'Microsoft.Web/sites@2021-01-15' = {
           value: containerRegistry.listCredentials().passwords[0].value
         }
         {
-          name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
+          name: 'AZURE_STORAGE_CONNECTION_STRING'
           value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
         }
       ]
@@ -136,6 +140,10 @@ resource webApi 'Microsoft.Web/sites@2021-01-15' = {
           value: 'Staging'
         }
         {
+          name: 'RUN_ON_AZURE_APP_SERVICE'
+          value: 'true'
+        }
+        {
           name: 'DOCKER_REGISTRY_SERVER_URL'
           value: 'https://${registryHost}'
         }
@@ -148,7 +156,7 @@ resource webApi 'Microsoft.Web/sites@2021-01-15' = {
           value: containerRegistry.listCredentials().passwords[0].value
         }
         {
-          name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
+          name: 'AZURE_STORAGE_CONNECTION_STRING'
           value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
         }
       ]

@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld.Abstractions", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld.Entities", "HelloWorld.Entities\HelloWorld.Entities.csproj", "{EC27A4B6-93C9-4AE8-B489-F4556F5F4CE2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Azure.Infrastructure", "Orleans.Azure.Infrastructure\Orleans.Azure.Infrastructure.csproj", "{CB3AD0C0-E535-43DF-AB1B-5DB5106F2EBB}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder1", "SolutionFolder1", "{64907E8E-321D-4458-BCBF-CBEAA1CA2D5A}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
@@ -41,10 +39,6 @@ Global
 		{EC27A4B6-93C9-4AE8-B489-F4556F5F4CE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC27A4B6-93C9-4AE8-B489-F4556F5F4CE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC27A4B6-93C9-4AE8-B489-F4556F5F4CE2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB3AD0C0-E535-43DF-AB1B-5DB5106F2EBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB3AD0C0-E535-43DF-AB1B-5DB5106F2EBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB3AD0C0-E535-43DF-AB1B-5DB5106F2EBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB3AD0C0-E535-43DF-AB1B-5DB5106F2EBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
