@@ -4,7 +4,8 @@ az group create --location eastus --name orleans-deployment
 
 az deployment group create --name orleans-deployment --resource-group orleans-deployment --template-file main.json
 
-docker buildx build --platform linux/amd64 -t hello-silo .
+## Docker things
 
-docker tag xxxx iac-talk/hello-silo:v1
-docker tag xxxx iac-talk/hello-api:v1
+docker buildx build -f HelloWorld.Silo/Dockerfile --platform linux/amd64 -t peiandy/hello-silo:v1 . --push
+
+docker buildx build -f HelloWorld.Services/Dockerfile --platform linux/amd64 -t peiandy/hello-api:v1 . --push
