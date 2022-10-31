@@ -351,3 +351,5 @@ MigrationBackup/
 
 deployment/main.json
 deployment/bicep/main.json
+
+!deployment/cdk/bin/
