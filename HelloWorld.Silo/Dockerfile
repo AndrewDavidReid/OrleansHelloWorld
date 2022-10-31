@@ -10,7 +10,6 @@ WORKDIR /src
 COPY ["HelloWorld.Silo/HelloWorld.Silo.csproj", "HelloWorld.Silo/"]
 COPY ["HelloWorld.Abstractions/HelloWorld.Abstractions.csproj", "HelloWorld.Abstractions/"]
 COPY ["HelloWorld.Entities/HelloWorld.Entities.csproj", "HelloWorld.Entities/"]
-COPY ["Orleans.Azure.Infrastructure/Orleans.Azure.Infrastructure.csproj", "Orleans.Azure.Infrastructure/"]
 RUN dotnet restore "HelloWorld.Silo/HelloWorld.Silo.csproj"
 COPY . .
 WORKDIR "/src/HelloWorld.Silo"

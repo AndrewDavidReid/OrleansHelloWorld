@@ -8,7 +8,6 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["HelloWorld.Services/HelloWorld.Services.csproj", "HelloWorld.Services/"]
 COPY ["HelloWorld.Abstractions/HelloWorld.Abstractions.csproj", "HelloWorld.Abstractions/"]
-COPY ["Orleans.Azure.Infrastructure/Orleans.Azure.Infrastructure.csproj", "Orleans.Azure.Infrastructure/"]
 RUN dotnet restore "HelloWorld.Services/HelloWorld.Services.csproj"
 COPY . .
 WORKDIR "/src/HelloWorld.Services"

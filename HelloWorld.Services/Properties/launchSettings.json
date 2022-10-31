@@ -8,7 +8,7 @@
       "applicationUrl": "https://localhost:7048;http://localhost:5048",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ORLEANS_AZURE_STORAGE_CONNECTION_STRING": "xxx"
+        "ORLEANS_AZURE_STORAGE_CONNECTION_STRING": ""
       }
     }
   }

@@ -2,7 +2,7 @@
 
 namespace HelloWorld.Abstractions;
 
-public interface IHelloWorld : IGrainWithGuidKey
+public interface IHelloWorld : IGrainWithStringKey
 {
     Task<string> SayHelloWorld();
 }

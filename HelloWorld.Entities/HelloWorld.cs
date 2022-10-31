@@ -17,7 +17,7 @@ public class HelloWorld : Grain, IHelloWorld
 
     public async Task<string> SayHelloWorld()
     {
-        string greeting = "Hello World";
+        var greeting = $"Hello, from {this.GetPrimaryKeyString()}";
         _hello.State.Greeting = greeting;
         await _hello.WriteStateAsync();
         return greeting;

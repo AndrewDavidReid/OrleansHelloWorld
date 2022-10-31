@@ -13,8 +13,8 @@ public static class SiloBuilderExtensions
   {
     siloBuilder.Configure<ClusterOptions>(options =>
     {
-      options.ClusterId = "hello-orleans-cluster";
-      options.ServiceId = "hello-orleans-service";
+      options.ClusterId = ConfigurationConstants.ClusterId;
+      options.ServiceId = ConfigurationConstants.ServiceId;
     });
 
     siloBuilder.Configure<SiloOptions>(options => options.SiloName = "hello-orleans-silo");
@@ -111,44 +111,24 @@ public static class SiloBuilderExtensions
     return RuntimeEnvironments.Local;
   }
 
-  private static StorageProviders DetermineStorageProvider(IConfiguration configuration)
-  {
-    var useAzureStorage = !string.IsNullOrEmpty(configuration.GetValue<string>("AZURE_STORAGE_CONNECTION_STRING"));
-    var useMongoDb = !string.IsNullOrEmpty(configuration.GetValue<string>("MONGO_CONNECTION_STRING"));
-
-    if (useAzureStorage)
-    {
-      return StorageProviders.AzureTableStorage;
-    }
-
-    if (useMongoDb)
-    {
-      return StorageProviders.MongoDb;
-    }
-
-    return StorageProviders.InMemory;
-  }
-
   private static ISiloBuilder ConfigureClusteringAndGrainStorage(this ISiloBuilder siloBuilder, IConfiguration configuration)
   {
-    var storageProvider = DetermineStorageProvider(configuration);
+    var storageProvider = StorageProviderUtils.GetStorageProvider(configuration);
 
-    switch (storageProvider)
+    switch (storageProvider.Id)
     {
       case StorageProviders.AzureTableStorage:
-        return ConfigureAzureClusteringAndGrainStorage(siloBuilder, configuration);
+        return ConfigureAzureClusteringAndGrainStorage(siloBuilder, storageProvider.ConnectionString);
       case StorageProviders.MongoDb:
-        return ConfigureMongoClusteringAndStorage(siloBuilder, configuration);
+        return ConfigureMongoClusteringAndStorage(siloBuilder, storageProvider.ConnectionString);
       default:
         return ConfigureLocalhostInMemoryClusteringAndStorage(siloBuilder);
     }
   }
 
   private static ISiloBuilder ConfigureAzureClusteringAndGrainStorage(this ISiloBuilder siloBuilder,
-    IConfiguration configuration)
+    string connectionString)
   {
-    var connectionString = configuration.GetValue<string>("AZURE_STORAGE_CONNECTION_STRING");
-
     siloBuilder
       .UseAzureStorageClustering(storageOptions => storageOptions.ConfigureTableServiceClient(connectionString))
       .AddAzureTableGrainStorage(ConfigurationConstants.StorageName, tableStorageOptions =>
@@ -160,25 +140,24 @@ public static class SiloBuilderExtensions
     return siloBuilder;
   }
 
-  private static ISiloBuilder ConfigureMongoClusteringAndStorage(this ISiloBuilder siloBuilder, IConfiguration configuration)
+  private static ISiloBuilder ConfigureMongoClusteringAndStorage(this ISiloBuilder siloBuilder, string connectionString)
   {
-    var mongoConnectionString = configuration.GetValue<string>("MONGO_CONNECTION_STRING");
-    siloBuilder.UseMongoDBClient(mongoConnectionString);
+    siloBuilder.UseMongoDBClient(connectionString);
     siloBuilder.UseMongoDBClustering(x =>
     {
       x.Strategy = MongoDBMembershipStrategy.SingleDocument;
-      x.DatabaseName = "helloOrleansSiloClusteringDb";
+      x.DatabaseName = ConfigurationConstants.MongoClusteringDatabase;
       x.CreateShardKeyForCosmos = false;
     });
-    siloBuilder.AddMongoDBGrainStorage("silo-grain-storage",
-      x => { x.DatabaseName = "helloOrleansSiloGrainStorageDb"; });
+    siloBuilder.AddMongoDBGrainStorage(ConfigurationConstants.StorageName,
+      x => { x.DatabaseName = ConfigurationConstants.MongoGrainStorageDatabase; });
     return siloBuilder;
   }
 
   private static ISiloBuilder ConfigureLocalhostInMemoryClusteringAndStorage(this ISiloBuilder siloBuilder)
   {
     siloBuilder.UseLocalhostClustering();
-    siloBuilder.AddMemoryGrainStorageAsDefault();
+    siloBuilder.AddMemoryGrainStorage(ConfigurationConstants.StorageName);
     return siloBuilder;
   }
 }

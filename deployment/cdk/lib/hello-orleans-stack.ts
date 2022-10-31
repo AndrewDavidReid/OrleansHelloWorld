@@ -8,7 +8,6 @@ import {
   ContainerDefinition,
   ContainerImage,
   FargateService,
-  HealthCheck,
   LogDriver,
   NetworkMode,
   TaskDefinition,
@@ -35,51 +34,45 @@ export class HelloOrleansStack extends cdk.Stack {
       vpc: vpc,
     });
 
-    const siloTaskDefinition = new TaskDefinition(this, "silo-task-def", {
-      compatibility: Compatibility.FARGATE,
-      networkMode: NetworkMode.AWS_VPC,
-      cpu: "512",
-      memoryMiB: "1024",
-    });
+    const siloTaskDefinition = this.getTaskDefinition("silo-task-def");
+    const apiTaskDefinition = this.getTaskDefinition("api-task-def");
 
-    // TODO: Update site to return a randomly generated message, saved as a grain
-
-    // HealthCheck
-    const healthCheck: HealthCheck = {
-      command: ["CMD-SHELL", "curl -f http://localhost/healthz || exit 1"],
-    };
-
-    const siloContainer = new ContainerDefinition(this, "silo-container-def", {
-      taskDefinition: siloTaskDefinition,
-      environment: {
-        ["RUN_ON_AWS_ECS"]: "true",
-        ["MONGO_CONNECTION_STRING"]: process.env.MONGO_CONNECTION_STRING ?? "",
-      },
-      healthCheck,
-      image: ContainerImage.fromRegistry("peiandy/hello-silo:v3"),
-      essential: true,
-      logging: LogDriver.awsLogs({
-        streamPrefix: "silo-",
-        logRetention: RetentionDays.ONE_DAY,
-        mode: AwsLogDriverMode.NON_BLOCKING,
-      }),
-      portMappings: [
-        {
-          containerPort: 11111,
-        },
-        {
-          containerPort: 30000,
-        },
+    const siloContainer = this.getContainerDefinition(
+      siloTaskDefinition,
+      "silo-container-def",
+      "peiandy/hello-silo:v4",
+      [
         {
           containerPort: 80,
         },
         {
           containerPort: 8080,
         },
-      ],
-    });
+        {
+          containerPort: 11111,
+        },
+        {
+          containerPort: 30000,
+        },
+      ]
+    );
+
+    const apiContainer = this.getContainerDefinition(
+      apiTaskDefinition,
+      "api-container-def",
+      "peiandy/hello-api:v1",
+      [
+        {
+          containerPort: 80,
+        },
+      ]
+    );
 
     const siloSecurityGroup = new SecurityGroup(this, "silo-sg", {
+      vpc,
+    });
+
+    const apiSecurityGroup = new SecurityGroup(this, "api-sg", {
       vpc,
     });
 
@@ -98,8 +91,12 @@ export class HelloOrleansStack extends cdk.Stack {
     // ALB to dashboard.
     siloSecurityGroup.addIngressRule(albSecurityGroup, Port.tcp(80));
     siloSecurityGroup.addIngressRule(albSecurityGroup, Port.tcp(8080));
+    // API to Silo
+    siloSecurityGroup.addIngressRule(apiSecurityGroup, Port.tcp(30000));
     siloPeeringSecurityGroup.addIngressRule(siloSecurityGroup, Port.tcp(11111));
     siloPeeringSecurityGroup.addEgressRule(siloSecurityGroup, Port.tcp(11111));
+    // ALB to API
+    apiSecurityGroup.addIngressRule(albSecurityGroup, Port.tcp(80));
 
     const siloService = new FargateService(this, "silo-fargate-service", {
       cluster,
@@ -107,6 +104,14 @@ export class HelloOrleansStack extends cdk.Stack {
       taskDefinition: siloTaskDefinition,
       healthCheckGracePeriod: Duration.seconds(180),
       securityGroups: [siloSecurityGroup, siloPeeringSecurityGroup],
+    });
+
+    const apiService = new FargateService(this, "api-fargate-service", {
+      cluster,
+      desiredCount: 1,
+      taskDefinition: apiTaskDefinition,
+      healthCheckGracePeriod: Duration.seconds(180),
+      securityGroups: [apiSecurityGroup],
     });
 
     const loadBalancer = new ApplicationLoadBalancer(
@@ -154,7 +159,7 @@ export class HelloOrleansStack extends cdk.Stack {
       }
     );
 
-    const siloTargetGroup = new ApplicationTargetGroup(this, "silo-atg", {
+    const apiTargetGroup = new ApplicationTargetGroup(this, "api-atg", {
       vpc,
       targetType: TargetType.IP,
       port: 80,
@@ -167,21 +172,59 @@ export class HelloOrleansStack extends cdk.Stack {
         unhealthyThresholdCount: 3,
       },
       targets: [
-        siloService.loadBalancerTarget({
-          containerName: siloContainer.containerName,
+        apiService.loadBalancerTarget({
+          containerName: apiContainer.containerName,
           containerPort: 80,
         }),
       ],
     });
 
-    const siloListener = loadBalancer.addListener("silo-http-listener", {
+    const apiListener = loadBalancer.addListener("silo-http-listener", {
       port: 80,
       protocol: ApplicationProtocol.HTTP,
-      defaultTargetGroups: [siloTargetGroup],
+      defaultTargetGroups: [apiTargetGroup],
       open: true,
     });
 
-    siloService.node.addDependency(cluster);
+    // Ensure load balencer is deployed before services
     siloService.node.addDependency(loadBalancer);
+    apiService.node.addDependency(loadBalancer);
+    // Ensure silo service is deployed before the api service
+    apiService.node.addDependency(siloService);
+  }
+
+  private getTaskDefinition(taskDefinitionName: string) {
+    return new TaskDefinition(this, taskDefinitionName, {
+      compatibility: Compatibility.FARGATE,
+      networkMode: NetworkMode.AWS_VPC,
+      cpu: "512",
+      memoryMiB: "1024",
+    });
+  }
+
+  private getContainerDefinition(
+    taskDefinition: TaskDefinition,
+    containerName: string,
+    imageTag: string,
+    portMappings: cdk.aws_ecs.PortMapping[]
+  ) {
+    return new ContainerDefinition(this, containerName, {
+      taskDefinition: taskDefinition,
+      environment: {
+        ["RUN_ON_AWS_ECS"]: "true",
+        ["MONGO_CONNECTION_STRING"]: process.env.MONGO_CONNECTION_STRING ?? "",
+      },
+      healthCheck: {
+        command: ["CMD-SHELL", "curl -f http://localhost/healthz || exit 1"],
+      },
+      image: ContainerImage.fromRegistry(imageTag),
+      essential: true,
+      logging: LogDriver.awsLogs({
+        streamPrefix: containerName,
+        logRetention: RetentionDays.ONE_DAY,
+        mode: AwsLogDriverMode.NON_BLOCKING,
+      }),
+      portMappings,
+    });
   }
 }

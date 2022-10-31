@@ -10,9 +10,6 @@ builder.Host.UseOrleans(siloBuilder =>
 });
 builder.Services.AddHealthChecks();
 
-
 var app = builder.Build();
-
 app.MapHealthChecks("/healthz");
-
 app.Run();
