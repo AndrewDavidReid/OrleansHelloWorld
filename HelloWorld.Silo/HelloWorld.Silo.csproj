@@ -23,4 +23,9 @@
     <ProjectReference Include="..\HelloWorld.Entities\HelloWorld.Entities.csproj" />
   </ItemGroup>
 
+  <Target Name="ZipPublishOutput" AfterTargets="Publish">
+    <Delete Files="$(ProjectDir)\..\artifacts\silo.zip" />
+    <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(ProjectDir)\..\artifacts\silo.zip" />
+  </Target>
+
 </Project>

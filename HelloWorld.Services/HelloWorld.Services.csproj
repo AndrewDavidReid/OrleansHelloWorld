@@ -20,7 +20,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HelloWorld.Abstractions\HelloWorld.Abstractions.csproj" />
-
   </ItemGroup>
+
+  <Target Name="ZipPublishOutput" AfterTargets="Publish">
+    <Delete Files="$(ProjectDir)\..\artifacts\api.zip" />
+    <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(ProjectDir)\..\artifacts\api.zip" />
+  </Target>
 
 </Project>
